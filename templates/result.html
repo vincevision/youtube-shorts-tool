@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>YouTube Short Assets</title>
+    <style>
+        :root {
+            --bg: #050816;
+            --card-bg: #0f172a;
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #1e293b 0, #020617 55%, #000 100%);
+            color: var(--text-main);
+        }
+        .wrapper {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 16px 40px;
+        }
+        .card {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 16px;
+            padding: 24px 24px 28px;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.8),
+                        0 0 0 1px rgba(148, 163, 184, 0.12);
+            border: 1px solid rgba(55, 65, 81, 0.6);
+        }
+        h1 { font-size: 1.7rem; margin: 0 0 10px; }
+        .meta {
+            font-size: 0.9rem; color: var(--text-muted); margin-bottom: 18px;
+        }
+        .section { margin-bottom: 26px; }
+        .section h2 {
+            font-size: 1.1rem; margin-bottom: 8px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .pill-copy {
+            border-radius: 999px; border: 1px solid rgba(148, 163, 184, 0.6);
+            padding: 3px 10px; font-size: 0.78rem; color: var(--text-muted);
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .copy-btn {
+            border-radius: 999px; border: none; padding: 4px 10px;
+            font-size: 0.75rem; cursor: pointer;
+            background: rgba(79, 70, 229, 0.12); color: var(--accent-light);
+        }
+        .copy-btn:hover { background: rgba(79, 70, 229, 0.25); }
+        pre {
+            background: rgba(15,23,42,0.9);
+            border-radius: 10px;
+            padding: 10px 12px;
+            white-space: pre-wrap;
+            border: 1px solid rgba(55,65,81,0.8);
+            font-size: 0.9rem; margin: 0;
+        }
+        .tag-box {
+            background: rgba(15,23,42,0.9);
+            border-radius: 10px;
+            border: 1px solid rgba(55,65,81,0.8);
+            padding: 8px 10px; font-size: 0.9rem;
+        }
+        .tag-box span {
+            display: inline-block; margin: 2px 4px; padding: 3px 8px;
+            border-radius: 999px; border: 1px solid rgba(75,85,99,0.8);
+            background: rgba(17,24,39,0.9); font-size: 0.8rem;
+        }
+        .footer-link { margin-top: 8px; font-size: 0.85rem; }
+        .footer-link a { color: var(--accent-light); text-decoration: none; }
+        .footer-link a:hover { text-decoration: underline; }
+        .copy-toast {
+            position: fixed; bottom: 20px; right: 16px;
+            background: rgba(22,163,74,0.95);
+            color: #ecfdf5; padding: 8px 14px;
+            border-radius: 999px; font-size: 0.8rem;
+            box-shadow: 0 10px 20px rgba(22,163,74,0.5);
+            opacity: 0; transform: translateY(10px);
+            pointer-events: none;
+            transition: opacity 0.12s ease-out, transform 0.12s ease-out;
+        }
+        .copy-toast.show { opacity: 1; transform: translateY(0); }
+        .title-option {
+            border-radius: 10px; border: 1px solid rgba(55,65,81,0.8);
+            padding: 6px 8px; margin-bottom: 6px;
+            background: rgba(15,23,42,0.9); font-size: 0.9rem; cursor: pointer;
+        }
+        .title-option:hover { border-color: var(--accent); }
+        .title-option.selected {
+            border-color: var(--accent);
+            background: rgba(79,70,229,0.15);
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="card">
+        <h1>YouTube Short Assets</h1>
+
+        <div class="meta">
+            <strong>Celebrity:</strong> {{ celeb }} •
+            <strong>Niche:</strong> {{ niche or "—" }} •
+            <strong>Style:</strong> {{ style }} •
+            <strong>Region:</strong> {{ region or "Global" }}<br>
+            <strong>Topic:</strong> {{ topic }}
+        </div>
+
+        <div class="section" id="titles-section">
+            <h2>
+                Title ideas
+                <span class="pill-copy">
+                    <button type="button" class="copy-btn" onclick="copySelectedTitle()">Copy selected title</button>
+                </span>
+            </h2>
+            {% if titles %}
+                {% for title in titles %}
+                    <div class="title-option" onclick="selectTitle(this)">
+                        {{ title }}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No titles generated.</p>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>
+                Description
+                <span class="pill-copy">
+                    <button type="button" class="copy-btn" onclick="copyText('description-text')">Copy description</button>
+                </span>
+            </h2>
+            <pre id="description-text">{{ description }}</pre>
+        </div>
+
+        <div class="section">
+            <h2>
+                Tags
+                <span class="pill-copy">
+                    <button type="button" class="copy-btn" onclick="copyTags()">Copy all tags</button>
+                </span>
+            </h2>
+            {% if tags %}
+                <div class="tag-box" id="tags-text" data-tags="{{ ', '.join(tags) }}">
+                    {% for t in tags %}
+                        <span>{{ t }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No tags generated.</p>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>Upload to YouTube</h2>
+            <p style="font-size:0.85rem; color:#9ca3af;">
+                When you’re ready, confirm your selected title and move to the upload page.
+                You’ll choose your video file and the app will use this title, description and tags.
+            </p>
+
+            <form id="upload-form" method="post" action="{{ url_for('upload_page') }}">
+                <input type="hidden" name="selected_title" id="selected_title_input">
+                <input type="hidden" name="description" id="description_input" value="{{ description }}">
+                <input type="hidden" name="tags" id="tags_input" value="{{ ','.join(tags) }}">
+                <button type="button" class="copy-btn" style="margin-top:8px;" onclick="proceedToUpload()">
+                    Next: Upload video to YouTube
+                </button>
+            </form>
+        </div>
+
+        <div class="footer-link">
+            <a href="{{ url_for('index') }}">⬅ Generate another idea</a>
+        </div>
+    </div>
+</div>
+
+<div class="copy-toast" id="copy-toast">Copied!</div>
+
+<script>
+    let selectedTitleElement = null;
+
+    function selectTitle(elem) {
+        if (selectedTitleElement) {
+            selectedTitleElement.classList.remove("selected");
+        }
+        selectedTitleElement = elem;
+        elem.classList.add("selected");
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById("copy-toast");
+        toast.textContent = message || "Copied!";
+        toast.classList.add("show");
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 1400);
+    }
+
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast("Copied to clipboard");
+        } catch (err) {
+            console.error("Copy failed:", err);
+        }
+    }
+
+    function copySelectedTitle() {
+        if (!selectedTitleElement) {
+            showToast("Select a title first");
+            return;
+        }
+        const text = selectedTitleElement.textContent.trim();
+        if (text) {
+            copyToClipboard(text);
+        }
+    }
+
+    function copyText(elementId) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        const text = el.textContent.trim();
+        if (text) {
+            copyToClipboard(text);
+        }
+    }
+
+    function copyTags() {
+        const el = document.getElementById("tags-text");
+        if (!el) return;
+        const text = el.getAttribute("data-tags") || el.textContent;
+        if (text) {
+            copyToClipboard(text.trim());
+        }
+    }
+
+    function proceedToUpload() {
+        if (!selectedTitleElement) {
+            showToast("Select a title first");
+            return;
+        }
+        const titleText = selectedTitleElement.textContent.trim();
+        if (!titleText) {
+            showToast("Title is empty");
+            return;
+        }
+        document.getElementById("selected_title_input").value = titleText;
+        document.getElementById("upload-form").submit();
+    }
+</script>
+</body>
+</html>
